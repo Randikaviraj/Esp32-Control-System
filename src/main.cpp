@@ -1,6 +1,8 @@
 #include <Arduino.h>
 #include <OneWire.h> 
 #include <DallasTemperature.h>
+#include <WiFi.h>
+#include <HTTPClient.h>
 
 #define ALERT_PORT 18
 #define FEED_PORT  17
@@ -9,6 +11,14 @@
 #define TEMPO_PIN  14 //pH meter Analog output to ESP Analog Input 14
 #define PH_PIN 12
 #define WATER_RENEW_DELAY 60000
+
+// set wifi credentials
+const char* ssid = "REPLACE_WITH_YOUR_SSID";
+const char* password = "REPLACE_WITH_YOUR_PASSWORD";
+
+// Server name 
+String serverName = "http://192.168.1.106:3000/";
+
 
 // Data wire is plugged into port 2 on the Arduino
 #define ONE_WIRE_BUS 2
@@ -77,12 +87,37 @@ void feedFish(){
 }
 
 void setup() {
+  WiFi.begin(ssid, password);
+  Serial.println("Connecting");
+  while(WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    // Serial.print(".");
+  }
   pinMode(WATER_REMOVE_PORT,OUTPUT);
   pinMode(ALERT_PORT,OUTPUT);
   pinMode(FEED_PORT,OUTPUT);
   pinMode(WATER_FILL_PORT,OUTPUT);
   // Start up the library 
   sensors.begin(); 
+}
+
+void sendData(){
+  // send data to the server
+  String serverPath = serverName + "?temperature=24.37";
+
+// Your Domain name with URL path or IP address with path
+  // http.begin(serverPath.c_str());
+
+// Send HTTP GET request
+//  int httpResponseCode = http.GET();
+}
+
+void getStableTemparatue(){
+
+}
+
+void getFeedTime(){
+
 }
 
 void loop() {
