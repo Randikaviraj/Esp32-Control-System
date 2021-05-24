@@ -51,23 +51,7 @@ WiFiClient espClient;
 PubSubClient client(espClient);
 
 
-void callback(char* topic, byte* payload, unsigned int length) {
-  /*
-    callback function for the mqtt client
-  */
-    Serial.print("Message arrived [");
-    Serial.print(topic);
-    Serial.print("] ");
-    String data= String(*payload);
-    if (data=="feed")
-    {
-      feedFish()
-    }else{
-      renewWater()
-    }
-    
-    Serial.println(data);
-}
+
 
 void reconnect() {
   /*
@@ -81,7 +65,7 @@ void reconnect() {
       if (client.connect("ESP32 Client")) {
         Serial.println("connected");
         // ... and subscribe to topic
-        client.subscribe("tank/"+device_ID);
+        client.subscribe("tank/001");
       } else {
         Serial.print("failed, rc=");
         Serial.print(client.state());
@@ -264,12 +248,29 @@ unsigned char checkPh(float ph){
   }
 }
 
+void callback(char* topic, byte* payload, unsigned int length) {
+  /*
+    callback function for the mqtt client
+  */
+    Serial.print("Message arrived [");
+    Serial.print(topic);
+    Serial.print("] ");
+    String data= String(*payload);
+    if (data=="feed")
+    {
+      feedFish();
+    }else{
+      renewWater();
+    }
+    
+    Serial.println(data);
+}
 
 
 void setup() {
   // mqtt client is now configured for use
-   client.setServer(IPAddress(192,168,1,106), 1883);
-   client.setCallback(callback);
+  client.setServer(IPAddress(192,168,1,106), 1883);
+  client.setCallback(callback);
   
   WiFi.begin(ssid, password);
   Serial.println("Connecting");
@@ -292,5 +293,26 @@ void loop() {
   reconnect();
  }
  client.loop();
+
+ float ph=getPH();
+ float temp=getTemparatue();
+
+ if (checkPh(ph)=='0' )
+ {
+   alertOn();
+   renewWater();
+   alertOff();
+ }
+ if (checkTemprature(temp)=='0')
+ {
+   alertOn();
+   renewWater();
+   alertOff();
+ }
+ 
+ if (sendData(ph,temp)=='0')
+ {
+   /* code */
+ }
  
 }
